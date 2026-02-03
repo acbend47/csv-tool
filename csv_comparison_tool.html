@@ -1,0 +1,2587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Comparison & Extraction Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f8f9fa;
+        }
+
+        .upload-area.dragover {
+            background: #e7e9fc;
+            border-color: #764ba2;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .file-list {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .file-stats {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .remove-btn:hover {
+            background: #c82333;
+        }
+
+        .comparison-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .option-group {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .checkbox-group {
+            margin-top: 15px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            font-weight: 500;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .field-inputs {
+            margin-top: 15px;
+        }
+
+        .field-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .field-input-group input {
+            flex: 1;
+        }
+
+        .add-field-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .add-field-btn:hover {
+            background: #138496;
+        }
+
+        .results-summary {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .summary-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary-number {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .summary-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .results-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .filter-row {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 2fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .column-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .column-pill {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .field-hint {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 8px;
+        }
+
+        .group-header {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0 10px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .group-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .group-count {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .header-analysis-table {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .header-analysis-table th {
+            background: #f8f9fa;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .header-analysis-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .header-match {
+            background: #d4edda;
+        }
+
+        .header-mismatch {
+            background: #f8d7da;
+        }
+
+        .header-chip {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px;
+            background: #e9ecef;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .mapper-row {
+            display: grid;
+            grid-template-columns: 150px 1fr auto;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: start;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .mapper-file-section {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+
+        .mapper-file-header {
+            font-weight: 600;
+            font-size: 13px;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+
+        .similarity-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .similarity-high {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .similarity-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .similarity-low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 CSV Comparison & Extraction Tool</h1>
+            <p>Upload, compare, and extract data from multiple CSV files</p>
+        </div>
+
+        <div class="content">
+            <!-- File Upload Section -->
+            <div class="section">
+                <div class="section-title">📁 Upload CSV Files</div>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📤</div>
+                    <h3>Drag & Drop CSV Files Here</h3>
+                    <p style="margin: 10px 0; color: #6c757d;">or</p>
+                    <label for="fileInput" class="btn btn-primary">Choose Files</label>
+                    <input type="file" id="fileInput" accept=".csv" multiple>
+                    <p style="margin-top: 15px; color: #6c757d; font-size: 14px;">You can upload multiple CSV files at once</p>
+                </div>
+
+                <div class="file-list" id="fileList"></div>
+            </div>
+
+            <!-- Mode Selection -->
+            <div class="section hidden" id="modeSection">
+                <div class="section-title">🎯 Select Mode</div>
+                <div class="comparison-options">
+                    <div class="option-group">
+                        <button class="btn btn-primary" onclick="switchMode('compare')" style="width: 100%; margin-bottom: 10px;">
+                            🔍 Compare Files
+                        </button>
+                        <p style="font-size: 14px; color: #6c757d;">Compare data across multiple CSV files to find matches or differences</p>
+                    </div>
+                    <div class="option-group">
+                        <button class="btn btn-primary" onclick="switchMode('extract')" style="width: 100%; margin-bottom: 10px;">
+                            📊 Extract & Query Data
+                        </button>
+                        <p style="font-size: 14px; color: #6c757d;">Filter and extract specific data from one or more CSV files</p>
+                    </div>
+                    <div class="option-group">
+                        <button class="btn btn-primary" onclick="switchMode('crossref')" style="width: 100%; margin-bottom: 10px;">
+                            🔗 Cross-Reference Query
+                        </button>
+                        <p style="font-size: 14px; color: #6c757d;">Find relationships across rows - e.g., all emails that ordered the same product</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Options Section -->
+            <div class="section hidden" id="optionsSection">
+                <div class="section-title">⚙️ Comparison Options</div>
+                
+                <div class="comparison-options">
+                    <div class="option-group">
+                        <label>Comparison Type</label>
+                        <select id="comparisonType">
+                            <option value="matching">Find Matching Records</option>
+                            <option value="non-matching">Find Non-Matching Records</option>
+                            <option value="unique-to-each">Unique to Each File</option>
+                            <option value="all-unique">All Unique Records (Not in All Files)</option>
+                        </select>
+                    </div>
+
+                    <div class="option-group">
+                        <label>Options</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="caseSensitive">
+                                <label for="caseSensitive">Case Sensitive</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="trimWhitespace" checked>
+                                <label for="trimWhitespace">Trim Whitespace</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="matchByHeaderName" checked>
+                                <label for="matchByHeaderName">Match by Header Name (not column position)</label>
+                            </div>
+                        </div>
+                        <p class="field-hint">
+                            When enabled, files are compared by header names regardless of column order. Useful when files have same headers in different positions.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="option-group" style="margin-top: 20px;">
+                    <label>Field Names to Compare (one per line)</label>
+                    <p style="font-size: 14px; color: #6c757d; margin-bottom: 10px;">
+                        Enter the exact field names as they appear in your CSV headers. Common examples: Email, email, First Name, LastName, ID
+                    </p>
+                    <button class="btn btn-secondary" onclick="showHeaderAnalysis()" style="margin-bottom: 10px; font-size: 14px;">
+                        📋 View All Headers from Files
+                    </button>
+                    <button class="btn btn-secondary" onclick="showHeaderMapper()" style="margin-bottom: 10px; margin-left: 10px; font-size: 14px;">
+                        🔗 Map Different Header Names
+                    </button>
+                    <div id="headerAnalysis" class="hidden" style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #667eea;">
+                        <!-- Header analysis will be inserted here -->
+                    </div>
+                    <div id="headerMapper" class="hidden" style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #17a2b8;">
+                        <!-- Header mapper will be inserted here -->
+                    </div>
+                    <div class="field-inputs" id="fieldInputs">
+                        <div class="field-input-group">
+                            <input type="text" placeholder="e.g., Email" value="Email">
+                            <button class="remove-btn" onclick="removeField(this)" style="display: none;">Remove</button>
+                        </div>
+                    </div>
+                    <button class="add-field-btn" onclick="addField()">+ Add Another Field</button>
+                </div>
+
+                <div style="margin-top: 30px; text-align: center;">
+                    <button class="btn btn-primary" onclick="performComparison()" style="padding: 15px 40px; font-size: 18px;">
+                        🔍 Compare Files
+                    </button>
+                    <button class="btn btn-secondary" onclick="goBackToMode()" style="padding: 15px 40px; font-size: 18px; margin-left: 10px;">
+                        ← Back
+                    </button>
+                </div>
+            </div>
+
+            <!-- Extraction Options Section -->
+            <div class="section hidden" id="extractionSection">
+                <div class="section-title">📊 Data Extraction & Query</div>
+                
+                <div class="alert alert-info">
+                    <strong>How it works:</strong> Add filters to extract specific data from your CSV files. You can filter by any column header and combine multiple conditions.
+                </div>
+
+                <div class="option-group" style="margin-bottom: 20px;">
+                    <label>Select Files to Extract From</label>
+                    <div id="fileSelectionList" class="checkbox-group"></div>
+                </div>
+
+                <div class="option-group" style="margin-bottom: 20px;">
+                    <label>Available Columns</label>
+                    <div id="availableColumns" style="background: white; padding: 15px; border-radius: 8px; min-height: 50px;">
+                        <p style="color: #6c757d;">Select files above to see available columns</p>
+                    </div>
+                </div>
+
+                <div class="option-group">
+                    <label>Add Filters</label>
+                    <div id="filterList"></div>
+                    <button class="add-field-btn" onclick="addFilter()">+ Add Filter</button>
+                </div>
+
+                <div class="option-group" style="margin-top: 20px;">
+                    <label>Columns to Include in Results (leave empty for all columns)</label>
+                    <div id="columnSelectionList" class="checkbox-group"></div>
+                </div>
+
+                <div class="comparison-options" style="margin-top: 20px;">
+                    <div class="option-group">
+                        <label>Result Options</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="removeDuplicates">
+                                <label for="removeDuplicates">Remove Duplicate Rows</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="sortResults">
+                                <label for="sortResults">Sort Results</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="option-group">
+                        <label>Sort By Column (if sort enabled)</label>
+                        <select id="sortColumn">
+                            <option value="">Choose column...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; text-align: center;">
+                    <button class="btn btn-primary" onclick="performExtraction()" style="padding: 15px 40px; font-size: 18px;">
+                        📥 Extract Data
+                    </button>
+                    <button class="btn btn-secondary" onclick="goBackToMode()" style="padding: 15px 40px; font-size: 18px; margin-left: 10px;">
+                        ← Back
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cross-Reference Query Section -->
+            <div class="section hidden" id="crossrefSection">
+                <div class="section-title">🔗 Cross-Reference Query</div>
+                
+                <div class="alert alert-info">
+                    <strong>How it works:</strong> Find relationships across rows. For example: "Show me all customers who ordered the same product" or "Find all emails with matching addresses".
+                </div>
+
+                <!-- File Selection -->
+                <div class="option-group" style="margin-bottom: 20px;">
+                    <label>Select Files to Query</label>
+                    <div id="crossrefFileSelectionList" class="checkbox-group"></div>
+                </div>
+
+                <!-- Query Type Selection -->
+                <div class="option-group" style="margin-bottom: 20px;">
+                    <label>Query Type</label>
+                    <select id="crossrefQueryType" onchange="updateCrossrefFields()">
+                        <option value="">Choose query type...</option>
+                        <option value="same_value">Find records with the same value in a column</option>
+                        <option value="grouped_by">Group records by a column and show related data</option>
+                        <option value="duplicate_values">Find duplicate values in a column</option>
+                        <option value="related_records">Find records related by multiple columns</option>
+                    </select>
+                </div>
+
+                <!-- Query Configuration -->
+                <div id="crossrefConfig" class="hidden">
+                    <!-- Group By Column -->
+                    <div class="option-group" id="groupBySection">
+                        <label id="groupByLabel">Group By Column</label>
+                        <select id="groupByColumn">
+                            <option value="">Choose column...</option>
+                        </select>
+                        <p class="field-hint" style="font-size: 13px; color: #6c757d; margin-top: 8px;">
+                            Example: "Product" to group by product, "Date" to group by date
+                        </p>
+                    </div>
+
+                    <!-- Show Related Columns -->
+                    <div class="option-group" id="relatedColumnsSection">
+                        <label>Show These Related Columns</label>
+                        <div id="relatedColumnsCheckboxes" class="checkbox-group"></div>
+                        <p class="field-hint" style="font-size: 13px; color: #6c757d; margin-top: 8px;">
+                            Select which columns to display for each group (e.g., Email, Customer Name)
+                        </p>
+                    </div>
+
+                    <!-- Additional Columns for Related Records -->
+                    <div class="option-group hidden" id="additionalMatchSection">
+                        <label>Additional Columns to Match</label>
+                        <div id="additionalMatchCheckboxes" class="checkbox-group"></div>
+                        <p class="field-hint" style="font-size: 13px; color: #6c757d; margin-top: 8px;">
+                            Find records that match on multiple columns
+                        </p>
+                    </div>
+
+                    <!-- Minimum Group Size -->
+                    <div class="comparison-options" style="margin-top: 20px;">
+                        <div class="option-group">
+                            <label>Minimum Group Size</label>
+                            <input type="number" id="minGroupSize" value="2" min="1" style="width: 100%;">
+                            <p class="field-hint" style="font-size: 13px; color: #6c757d; margin-top: 8px;">
+                                Only show groups with at least this many records (default: 2)
+                            </p>
+                        </div>
+                        <div class="option-group">
+                            <label>Result Display</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="showGroupSummary" checked>
+                                    <label for="showGroupSummary">Show Group Summary</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="sortByGroupSize" checked>
+                                    <label for="sortByGroupSize">Sort by Group Size</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; text-align: center;">
+                    <button class="btn btn-primary" onclick="performCrossReference()" style="padding: 15px 40px; font-size: 18px;">
+                        🔗 Run Query
+                    </button>
+                    <button class="btn btn-secondary" onclick="goBackToMode()" style="padding: 15px 40px; font-size: 18px; margin-left: 10px;">
+                        ← Back
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="section hidden" id="resultsSection">
+                <div class="section-title">📈 Results</div>
+                <div class="results-summary" id="resultsSummary"></div>
+                <div class="results-table" id="resultsTable"></div>
+                <div class="export-buttons">
+                    <button class="btn btn-success" onclick="exportResults()">💾 Download Results as CSV</button>
+                    <button class="btn btn-secondary" onclick="resetTool()">🔄 Start Over</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedFiles = [];
+        let parsedData = [];
+        let comparisonResults = [];
+        let currentMode = null;
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+
+        uploadArea.addEventListener('click', (e) => {
+            if (e.target !== uploadArea && !e.target.closest('.btn-primary')) return;
+            fileInput.click();
+        });
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                    uploadedFiles.push(file);
+                    parseCSV(file);
+                }
+            });
+            updateFileList();
+        }
+
+        function parseCSV(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                const lines = text.split(/\r?\n/).filter(line => line.trim());
+                
+                if (lines.length === 0) return;
+
+                const headers = parseCSVLine(lines[0]);
+                const rows = [];
+
+                for (let i = 1; i < lines.length; i++) {
+                    const values = parseCSVLine(lines[i]);
+                    if (values.length > 0) {
+                        const row = {};
+                        headers.forEach((header, index) => {
+                            row[header] = values[index] || '';
+                        });
+                        rows.push(row);
+                    }
+                }
+
+                parsedData.push({
+                    fileName: file.name,
+                    headers: headers,
+                    rows: rows,
+                    rowCount: rows.length
+                });
+
+                if (parsedData.length === uploadedFiles.length) {
+                    document.getElementById('modeSection').classList.remove('hidden');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                const nextChar = line[i + 1];
+
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        current += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+
+        function updateFileList() {
+            fileList.innerHTML = '';
+            uploadedFiles.forEach((file, index) => {
+                const fileData = parsedData[index];
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">📄 ${file.name}</div>
+                        <div class="file-stats">
+                            ${fileData ? `${fileData.rowCount.toLocaleString()} rows, ${fileData.headers.length} columns` : 'Loading...'}
+                        </div>
+                    </div>
+                    <button class="remove-btn" onclick="removeFile(${index})">Remove</button>
+                `;
+                fileList.appendChild(fileItem);
+            });
+        }
+
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1);
+            parsedData.splice(index, 1);
+            updateFileList();
+            if (uploadedFiles.length === 0) {
+                document.getElementById('modeSection').classList.add('hidden');
+            }
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            document.getElementById('modeSection').classList.add('hidden');
+            
+            if (mode === 'compare') {
+                document.getElementById('optionsSection').classList.remove('hidden');
+                document.getElementById('extractionSection').classList.add('hidden');
+                document.getElementById('crossrefSection').classList.add('hidden');
+            } else if (mode === 'extract') {
+                document.getElementById('extractionSection').classList.remove('hidden');
+                document.getElementById('optionsSection').classList.add('hidden');
+                document.getElementById('crossrefSection').classList.add('hidden');
+                setupExtractionMode();
+            } else if (mode === 'crossref') {
+                document.getElementById('crossrefSection').classList.remove('hidden');
+                document.getElementById('optionsSection').classList.add('hidden');
+                document.getElementById('extractionSection').classList.add('hidden');
+                setupCrossrefMode();
+            }
+        }
+
+        function goBackToMode() {
+            document.getElementById('modeSection').classList.remove('hidden');
+            document.getElementById('optionsSection').classList.add('hidden');
+            document.getElementById('extractionSection').classList.add('hidden');
+            document.getElementById('crossrefSection').classList.add('hidden');
+            document.getElementById('resultsSection').classList.add('hidden');
+            currentMode = null;
+        }
+
+        function setupExtractionMode() {
+            const fileSelectionList = document.getElementById('fileSelectionList');
+            fileSelectionList.innerHTML = '';
+            
+            parsedData.forEach((fileData, index) => {
+                const checkboxItem = document.createElement('div');
+                checkboxItem.className = 'checkbox-item';
+                checkboxItem.innerHTML = `
+                    <input type="checkbox" id="file_${index}" value="${index}" checked onchange="updateAvailableColumns()">
+                    <label for="file_${index}">${fileData.fileName}</label>
+                `;
+                fileSelectionList.appendChild(checkboxItem);
+            });
+
+            updateAvailableColumns();
+            
+            if (document.getElementById('filterList').children.length === 0) {
+                addFilter();
+            }
+        }
+
+        function updateAvailableColumns() {
+            const selectedFiles = getSelectedFiles();
+            const allColumns = new Set();
+            
+            selectedFiles.forEach(fileData => {
+                fileData.headers.forEach(header => allColumns.add(header));
+            });
+
+            const availableColumnsDiv = document.getElementById('availableColumns');
+            if (allColumns.size === 0) {
+                availableColumnsDiv.innerHTML = '<p style="color: #6c757d;">Select files above to see available columns</p>';
+            } else {
+                availableColumnsDiv.innerHTML = '<div class="column-pills">' + 
+                    Array.from(allColumns).map(col => `<span class="column-pill">${col}</span>`).join('') + 
+                    '</div>';
+            }
+
+            const columnSelectionList = document.getElementById('columnSelectionList');
+            columnSelectionList.innerHTML = '';
+            
+            Array.from(allColumns).sort().forEach(column => {
+                const checkboxItem = document.createElement('div');
+                checkboxItem.className = 'checkbox-item';
+                checkboxItem.innerHTML = `
+                    <input type="checkbox" id="col_${column.replace(/\s+/g, '_')}" value="${column}" checked>
+                    <label for="col_${column.replace(/\s+/g, '_')}">${column}</label>
+                `;
+                columnSelectionList.appendChild(checkboxItem);
+            });
+
+            const sortColumn = document.getElementById('sortColumn');
+            sortColumn.innerHTML = '<option value="">Choose column...</option>' +
+                Array.from(allColumns).sort().map(col => `<option value="${col}">${col}</option>`).join('');
+
+            updateFilterColumnOptions(Array.from(allColumns));
+        }
+
+        function updateFilterColumnOptions(columns) {
+            document.querySelectorAll('.filter-column-select').forEach(select => {
+                const currentValue = select.value;
+                select.innerHTML = '<option value="">Choose column...</option>' +
+                    columns.sort().map(col => `<option value="${col}" ${col === currentValue ? 'selected' : ''}>${col}</option>`).join('');
+            });
+        }
+
+        function getSelectedFiles() {
+            const selected = [];
+            document.querySelectorAll('#fileSelectionList input[type="checkbox"]:checked').forEach(checkbox => {
+                const index = parseInt(checkbox.value);
+                selected.push(parsedData[index]);
+            });
+            return selected;
+        }
+
+        function addFilter() {
+            const filterList = document.getElementById('filterList');
+            const filterId = 'filter_' + Date.now();
+            const filterRow = document.createElement('div');
+            filterRow.className = 'filter-row';
+            filterRow.id = filterId;
+            
+            const selectedFiles = getSelectedFiles();
+            const allColumns = new Set();
+            selectedFiles.forEach(fileData => {
+                fileData.headers.forEach(header => allColumns.add(header));
+            });
+            
+            const columnOptions = Array.from(allColumns).sort().map(col => 
+                `<option value="${col}">${col}</option>`
+            ).join('');
+
+            filterRow.innerHTML = `
+                <div class="filter-controls">
+                    <div>
+                        <div class="filter-label">Column</div>
+                        <select class="filter-column-select">
+                            <option value="">Choose column...</option>
+                            ${columnOptions}
+                        </select>
+                    </div>
+                    <div>
+                        <div class="filter-label">Condition</div>
+                        <select class="filter-condition-select">
+                            <option value="equals">Equals</option>
+                            <option value="not_equals">Not Equals</option>
+                            <option value="contains">Contains</option>
+                            <option value="not_contains">Does Not Contain</option>
+                            <option value="starts_with">Starts With</option>
+                            <option value="ends_with">Ends With</option>
+                            <option value="empty">Is Empty</option>
+                            <option value="not_empty">Is Not Empty</option>
+                            <option value="greater_than">Greater Than</option>
+                            <option value="less_than">Less Than</option>
+                        </select>
+                    </div>
+                    <div>
+                        <div class="filter-label">Value</div>
+                        <input type="text" class="filter-value-input" placeholder="Enter value...">
+                    </div>
+                    <div>
+                        <button class="remove-btn" onclick="removeFilter('${filterId}')">Remove</button>
+                    </div>
+                </div>
+            `;
+            
+            filterList.appendChild(filterRow);
+        }
+
+        function removeFilter(filterId) {
+            document.getElementById(filterId).remove();
+        }
+
+        function getFilters() {
+            const filters = [];
+            document.querySelectorAll('.filter-row').forEach(row => {
+                const column = row.querySelector('.filter-column-select').value;
+                const condition = row.querySelector('.filter-condition-select').value;
+                const value = row.querySelector('.filter-value-input').value;
+                
+                if (column) {
+                    filters.push({ column, condition, value });
+                }
+            });
+            return filters;
+        }
+
+        function getSelectedColumns() {
+            const selected = [];
+            document.querySelectorAll('#columnSelectionList input[type="checkbox"]:checked').forEach(checkbox => {
+                selected.push(checkbox.value);
+            });
+            return selected;
+        }
+
+        function performExtraction() {
+            const selectedFiles = getSelectedFiles();
+            const filters = getFilters();
+            const selectedColumns = getSelectedColumns();
+            const removeDuplicates = document.getElementById('removeDuplicates').checked;
+            const sortResults = document.getElementById('sortResults').checked;
+            const sortColumn = document.getElementById('sortColumn').value;
+
+            if (selectedFiles.length === 0) {
+                alert('Please select at least one file to extract from.');
+                return;
+            }
+
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.classList.remove('hidden');
+            resultsSection.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Extracting data...</p>
+                </div>
+            `;
+
+            setTimeout(() => {
+                extractData(selectedFiles, filters, selectedColumns, removeDuplicates, sortResults, sortColumn);
+            }, 100);
+        }
+
+        function extractData(selectedFiles, filters, selectedColumns, removeDuplicates, sortResults, sortColumn) {
+            let results = [];
+
+            selectedFiles.forEach(fileData => {
+                fileData.rows.forEach(row => {
+                    results.push({ ...row, __source: fileData.fileName });
+                });
+            });
+
+            if (filters.length > 0) {
+                results = results.filter(row => {
+                    return filters.every(filter => {
+                        const cellValue = (row[filter.column] || '').toString();
+                        const filterValue = filter.value;
+
+                        switch (filter.condition) {
+                            case 'equals':
+                                return cellValue.toLowerCase() === filterValue.toLowerCase();
+                            case 'not_equals':
+                                return cellValue.toLowerCase() !== filterValue.toLowerCase();
+                            case 'contains':
+                                return cellValue.toLowerCase().includes(filterValue.toLowerCase());
+                            case 'not_contains':
+                                return !cellValue.toLowerCase().includes(filterValue.toLowerCase());
+                            case 'starts_with':
+                                return cellValue.toLowerCase().startsWith(filterValue.toLowerCase());
+                            case 'ends_with':
+                                return cellValue.toLowerCase().endsWith(filterValue.toLowerCase());
+                            case 'empty':
+                                return cellValue.trim() === '';
+                            case 'not_empty':
+                                return cellValue.trim() !== '';
+                            case 'greater_than':
+                                return parseFloat(cellValue) > parseFloat(filterValue);
+                            case 'less_than':
+                                return parseFloat(cellValue) < parseFloat(filterValue);
+                            default:
+                                return true;
+                        }
+                    });
+                });
+            }
+
+            if (selectedColumns.length > 0 && selectedColumns.length < Object.keys(results[0] || {}).length) {
+                results = results.map(row => {
+                    const newRow = { __source: row.__source };
+                    selectedColumns.forEach(col => {
+                        if (row.hasOwnProperty(col)) {
+                            newRow[col] = row[col];
+                        }
+                    });
+                    return newRow;
+                });
+            }
+
+            if (removeDuplicates) {
+                const seen = new Set();
+                results = results.filter(row => {
+                    const key = JSON.stringify(row);
+                    if (seen.has(key)) {
+                        return false;
+                    }
+                    seen.add(key);
+                    return true;
+                });
+            }
+
+            if (sortResults && sortColumn && results.length > 0 && results[0].hasOwnProperty(sortColumn)) {
+                results.sort((a, b) => {
+                    const aVal = (a[sortColumn] || '').toString();
+                    const bVal = (b[sortColumn] || '').toString();
+                    return aVal.localeCompare(bVal);
+                });
+            }
+
+            comparisonResults = results;
+            displayExtractionResults(filters, selectedColumns);
+        }
+
+        function displayExtractionResults(filters, selectedColumns) {
+            const filterSummary = filters.length > 0 
+                ? filters.map(f => `${f.column} ${f.condition.replace(/_/g, ' ')} "${f.value}"`).join(', ')
+                : 'No filters applied';
+
+            const downloadButtons = `
+                <div class="export-buttons" style="margin-bottom: 20px;">
+                    <button class="btn btn-success" onclick="exportResults()">💾 Download Results as CSV</button>
+                    <button class="btn btn-secondary" onclick="resetTool()">🔄 Start Over</button>
+                </div>
+            `;
+
+            const summary = `
+                <h3>Extraction Results</h3>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-number">${comparisonResults.length.toLocaleString()}</div>
+                        <div class="summary-label">Records Found</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number">${filters.length}</div>
+                        <div class="summary-label">Filters Applied</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number">${selectedColumns && selectedColumns.length > 0 ? selectedColumns.length : 'All'}</div>
+                        <div class="summary-label">Columns Included</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>Filters:</strong> ${filterSummary}
+                </div>
+            `;
+
+            let tableHTML = '';
+            
+            if (comparisonResults.length === 0) {
+                tableHTML = '<div class="results-table"><div style="padding: 40px; text-align: center; color: #6c757d;"><h3>No results found</h3><p>No records matched your criteria.</p></div></div>';
+            } else {
+                const allHeaders = new Set(['__source']);
+                comparisonResults.forEach(row => {
+                    Object.keys(row).forEach(key => allHeaders.add(key));
+                });
+                const headers = Array.from(allHeaders);
+
+                tableHTML = '<div class="results-table"><table><thead><tr>';
+                headers.forEach(header => {
+                    const displayHeader = header === '__source' ? 'Source File' : header;
+                    tableHTML += `<th>${displayHeader}</th>`;
+                });
+                tableHTML += '</tr></thead><tbody>';
+
+                comparisonResults.slice(0, 1000).forEach(row => {
+                    tableHTML += '<tr>';
+                    headers.forEach(header => {
+                        const value = row[header] || '';
+                        tableHTML += `<td>${escapeHtml(value)}</td>`;
+                    });
+                    tableHTML += '</tr>';
+                });
+
+                if (comparisonResults.length > 1000) {
+                    tableHTML += `<tr><td colspan="${headers.length}" style="text-align: center; padding: 20px; background: #fff3cd; color: #856404;">Showing first 1,000 results of ${comparisonResults.length.toLocaleString()}. Download CSV to see all results.</td></tr>`;
+                }
+
+                tableHTML += '</tbody></table></div>';
+            }
+
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.classList.remove('hidden');
+            resultsSection.innerHTML = `
+                <div class="section-title">📈 Results</div>
+                ${downloadButtons}
+                <div class="results-summary">${summary}</div>
+                ${tableHTML}
+            `;
+        }
+
+        function addField() {
+            const fieldInputs = document.getElementById('fieldInputs');
+            const newField = document.createElement('div');
+            newField.className = 'field-input-group';
+            newField.innerHTML = `
+                <input type="text" placeholder="e.g., First Name">
+                <button class="remove-btn" onclick="removeField(this)">Remove</button>
+            `;
+            fieldInputs.appendChild(newField);
+        }
+
+        function removeField(btn) {
+            btn.parentElement.remove();
+        }
+
+        function getComparisonFields() {
+            const inputs = document.querySelectorAll('#fieldInputs input[type="text"]');
+            return Array.from(inputs)
+                .map(input => input.value.trim())
+                .filter(value => value.length > 0);
+        }
+
+        // Global variable to store header mappings
+        let headerMappings = {};
+
+        function calculateSimilarity(str1, str2) {
+            // Normalize strings
+            const s1 = str1.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const s2 = str2.toLowerCase().replace(/[^a-z0-9]/g, '');
+            
+            // Exact match after normalization
+            if (s1 === s2) return 100;
+            
+            // Check if one contains the other
+            if (s1.includes(s2) || s2.includes(s1)) {
+                const longer = Math.max(s1.length, s2.length);
+                const shorter = Math.min(s1.length, s2.length);
+                return Math.round((shorter / longer) * 90);
+            }
+            
+            // Levenshtein distance
+            const matrix = [];
+            for (let i = 0; i <= s2.length; i++) {
+                matrix[i] = [i];
+            }
+            for (let j = 0; j <= s1.length; j++) {
+                matrix[0][j] = j;
+            }
+            for (let i = 1; i <= s2.length; i++) {
+                for (let j = 1; j <= s1.length; j++) {
+                    if (s2.charAt(i - 1) === s1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            
+            const distance = matrix[s2.length][s1.length];
+            const maxLength = Math.max(s1.length, s2.length);
+            return Math.round((1 - distance / maxLength) * 100);
+        }
+
+        function getSimilarityBadge(similarity) {
+            if (similarity >= 80) {
+                return `<span class="similarity-badge similarity-high">${similarity}% match</span>`;
+            } else if (similarity >= 50) {
+                return `<span class="similarity-badge similarity-medium">${similarity}% match</span>`;
+            } else {
+                return `<span class="similarity-badge similarity-low">${similarity}% match</span>`;
+            }
+        }
+
+        function showHeaderMapper() {
+            const headerMapperDiv = document.getElementById('headerMapper');
+            
+            if (!headerMapperDiv.classList.contains('hidden')) {
+                headerMapperDiv.classList.add('hidden');
+                return;
+            }
+
+            // Clear previous content
+            headerMapperDiv.innerHTML = '';
+
+            // Collect unique headers from all files
+            const fileHeaders = parsedData.map(file => ({
+                fileName: file.fileName,
+                headers: file.headers
+            }));
+
+            // Add header
+            const headerSection = document.createElement('div');
+            headerSection.style.marginBottom = '15px';
+            headerSection.innerHTML = `
+                <h4 style="margin-bottom: 10px; color: #333;">🔗 Header Mapping Tool</h4>
+                <p style="font-size: 13px; color: #6c757d; margin-bottom: 15px;">
+                    Map headers with different names across files. For example, map "Email" in File 1 to "email_address" in File 2.
+                    The tool suggests similar headers automatically based on name similarity.
+                </p>
+            `;
+            headerMapperDiv.appendChild(headerSection);
+
+            // Manual mapping section FIRST
+            const manualSection = document.createElement('div');
+            manualSection.style.cssText = 'margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid #dee2e6;';
+            manualSection.innerHTML = `
+                <h4 style="margin-bottom: 10px; color: #333;">Manual Header Mapping</h4>
+                <p style="font-size: 13px; color: #6c757d; margin-bottom: 15px;">
+                    Create custom mappings by selecting headers from each file that should be treated as the same field.
+                </p>
+                <div id="manualMappings"></div>
+            `;
+            headerMapperDiv.appendChild(manualSection);
+            
+            const addManualBtn = document.createElement('button');
+            addManualBtn.className = 'add-field-btn';
+            addManualBtn.textContent = '+ Add Manual Mapping';
+            addManualBtn.onclick = addManualMapping;
+            manualSection.appendChild(addManualBtn);
+
+            // Get all unique normalized header names
+            const allHeaders = new Set();
+            fileHeaders.forEach(f => f.headers.forEach(h => allHeaders.add(h)));
+            const uniqueHeaders = Array.from(allHeaders);
+
+            // Find potential mappings
+            const potentialGroups = [];
+            const processed = new Set();
+
+            uniqueHeaders.forEach(header1 => {
+                if (processed.has(header1)) return;
+                
+                const group = [header1];
+                processed.add(header1);
+                
+                uniqueHeaders.forEach(header2 => {
+                    if (header1 === header2 || processed.has(header2)) return;
+                    
+                    const similarity = calculateSimilarity(header1, header2);
+                    if (similarity >= 50) {
+                        group.push(header2);
+                        processed.add(header2);
+                    }
+                });
+                
+                if (group.length > 1) {
+                    potentialGroups.push(group);
+                }
+            });
+
+            if (potentialGroups.length > 0) {
+                const suggestedHeader = document.createElement('div');
+                suggestedHeader.style.cssText = 'background: #d1ecf1; padding: 12px; border-radius: 6px; margin-bottom: 15px; margin-top: 20px;';
+                suggestedHeader.innerHTML = '<strong>✨ Auto-Detected Similar Headers</strong><p style="font-size: 13px; margin-top: 5px; margin-bottom: 0;">The tool found these headers that appear similar across files. Review and apply the mappings you want.</p>';
+                headerMapperDiv.appendChild(suggestedHeader);
+
+                potentialGroups.forEach((group, groupIndex) => {
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'mapper-row';
+                    groupDiv.id = `mapper_group_${groupIndex}`;
+                    
+                    // Column 1: Group label
+                    const labelDiv = document.createElement('div');
+                    labelDiv.style.paddingTop = '10px';
+                    labelDiv.innerHTML = `<strong>Group ${groupIndex + 1}</strong>`;
+                    groupDiv.appendChild(labelDiv);
+                    
+                    // Column 2: File selectors
+                    const selectorsDiv = document.createElement('div');
+                    
+                    fileHeaders.forEach((file, fileIndex) => {
+                        const matchingHeaders = group.filter(h => file.headers.includes(h));
+                        if (matchingHeaders.length > 0) {
+                            const fileSection = document.createElement('div');
+                            fileSection.className = 'mapper-file-section';
+                            fileSection.style.marginBottom = '10px';
+                            
+                            const fileHeader = document.createElement('div');
+                            fileHeader.className = 'mapper-file-header';
+                            fileHeader.textContent = file.fileName;
+                            fileSection.appendChild(fileHeader);
+                            
+                            const select = document.createElement('select');
+                            select.className = 'mapper-select';
+                            select.dataset.fileIndex = fileIndex;
+                            select.dataset.groupIndex = groupIndex;
+                            select.style.width = '100%';
+                            
+                            const emptyOption = document.createElement('option');
+                            emptyOption.value = '';
+                            emptyOption.textContent = '-- Don\'t map --';
+                            select.appendChild(emptyOption);
+                            
+                            file.headers.forEach(header => {
+                                const option = document.createElement('option');
+                                option.value = header;
+                                const isInGroup = group.includes(header);
+                                if (matchingHeaders[0] === header) {
+                                    option.selected = true;
+                                }
+                                const similarity = group[0] !== header ? calculateSimilarity(group[0], header) : 100;
+                                option.innerHTML = escapeHtml(header) + (similarity < 100 ? ' ' + getSimilarityBadge(similarity) : '');
+                                select.appendChild(option);
+                            });
+                            
+                            fileSection.appendChild(select);
+                            selectorsDiv.appendChild(fileSection);
+                        }
+                    });
+                    
+                    groupDiv.appendChild(selectorsDiv);
+                    
+                    // Column 3: Apply button
+                    const buttonDiv = document.createElement('div');
+                    buttonDiv.style.paddingTop = '10px';
+                    const applyBtn = document.createElement('button');
+                    applyBtn.className = 'btn btn-primary';
+                    applyBtn.style.cssText = 'padding: 8px 16px; font-size: 13px;';
+                    applyBtn.textContent = 'Apply Mapping';
+                    applyBtn.onclick = function() { applyMapping(groupIndex); };
+                    buttonDiv.appendChild(applyBtn);
+                    groupDiv.appendChild(buttonDiv);
+                    
+                    headerMapperDiv.appendChild(groupDiv);
+                });
+            }
+
+            // Show active mappings at the bottom
+            if (Object.keys(headerMappings).length > 0) {
+                const activeMappingsDiv = document.createElement('div');
+                activeMappingsDiv.style.cssText = 'margin-top: 20px; padding: 15px; background: #d4edda; border-radius: 8px;';
+                
+                let mappingsHTML = '<strong>✓ Active Mappings:</strong><br><div style="margin-top: 10px; font-size: 13px;">';
+                Object.entries(headerMappings).forEach(([standardName, mappings]) => {
+                    mappingsHTML += `<div style="margin-bottom: 5px;"><strong>${escapeHtml(standardName)}:</strong> `;
+                    mappingsHTML += Object.entries(mappings).map(([fileName, headerName]) => 
+                        `${escapeHtml(fileName)} → "${escapeHtml(headerName)}"`
+                    ).join(', ');
+                    mappingsHTML += `</div>`;
+                });
+                mappingsHTML += '</div>';
+                
+                activeMappingsDiv.innerHTML = mappingsHTML;
+                
+                const clearBtn = document.createElement('button');
+                clearBtn.className = 'btn btn-secondary';
+                clearBtn.style.cssText = 'margin-top: 10px; padding: 6px 12px; font-size: 13px;';
+                clearBtn.textContent = 'Clear All Mappings';
+                clearBtn.onclick = clearAllMappings;
+                activeMappingsDiv.appendChild(clearBtn);
+                
+                headerMapperDiv.appendChild(activeMappingsDiv);
+            }
+
+            headerMapperDiv.classList.remove('hidden');
+        }
+
+        function applyMapping(groupIndex) {
+            const selects = document.querySelectorAll(`[data-group-index="${groupIndex}"]`);
+            const mapping = {};
+            let standardName = null;
+
+            selects.forEach(select => {
+                const fileIndex = parseInt(select.dataset.fileIndex);
+                const headerName = select.value;
+                
+                if (headerName) {
+                    if (!standardName) {
+                        standardName = headerName;
+                    }
+                    mapping[parsedData[fileIndex].fileName] = headerName;
+                }
+            });
+
+            if (Object.keys(mapping).length < 2) {
+                alert('Please select at least 2 headers to map together.');
+                return;
+            }
+
+            headerMappings[standardName] = mapping;
+            
+            // Refresh the mapper display to show active mappings
+            const isMapperVisible = !document.getElementById('headerMapper').classList.contains('hidden');
+            if (isMapperVisible) {
+                document.getElementById('headerMapper').classList.add('hidden');
+                showHeaderMapper();
+            }
+            
+            // Add to comparison fields if not already there
+            quickAddField(standardName);
+            
+            alert(`Mapping created! "${standardName}" will now be used across all selected files.`);
+        }
+
+        function addManualMapping() {
+            const manualMappingsDiv = document.getElementById('manualMappings');
+            const mappingId = 'manual_' + Date.now();
+            
+            const mappingDiv = document.createElement('div');
+            mappingDiv.className = 'mapper-row';
+            mappingDiv.id = mappingId;
+            
+            // Column 1: Input field for unified name
+            const inputDiv = document.createElement('div');
+            inputDiv.style.paddingTop = '10px';
+            
+            const inputField = document.createElement('input');
+            inputField.type = 'text';
+            inputField.placeholder = 'Unified Name';
+            inputField.id = `${mappingId}_name`;
+            inputField.style.width = '130px';
+            
+            inputDiv.appendChild(inputField);
+            mappingDiv.appendChild(inputDiv);
+            
+            // Column 2: File selectors
+            const selectorsDiv = document.createElement('div');
+
+            parsedData.forEach((file, fileIndex) => {
+                const fileSection = document.createElement('div');
+                fileSection.className = 'mapper-file-section';
+                fileSection.style.marginBottom = '10px';
+                
+                const fileHeader = document.createElement('div');
+                fileHeader.className = 'mapper-file-header';
+                fileHeader.textContent = file.fileName;
+                fileSection.appendChild(fileHeader);
+                
+                const select = document.createElement('select');
+                select.className = 'manual-mapper-select';
+                select.dataset.mappingId = mappingId;
+                select.dataset.fileIndex = fileIndex;
+                select.style.width = '100%';
+                
+                const emptyOption = document.createElement('option');
+                emptyOption.value = '';
+                emptyOption.textContent = '-- Don\'t map --';
+                select.appendChild(emptyOption);
+                
+                file.headers.forEach(h => {
+                    const option = document.createElement('option');
+                    option.value = h;
+                    option.textContent = h;
+                    select.appendChild(option);
+                });
+                
+                fileSection.appendChild(select);
+                selectorsDiv.appendChild(fileSection);
+            });
+            
+            mappingDiv.appendChild(selectorsDiv);
+            
+            // Column 3: Buttons
+            const buttonDiv = document.createElement('div');
+            buttonDiv.style.paddingTop = '10px';
+            
+            const applyBtn = document.createElement('button');
+            applyBtn.className = 'btn btn-primary';
+            applyBtn.style.cssText = 'padding: 8px 16px; font-size: 13px; margin-bottom: 5px;';
+            applyBtn.textContent = 'Apply';
+            applyBtn.onclick = function() { applyManualMapping(mappingId); };
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-btn';
+            removeBtn.style.cssText = 'padding: 6px 12px; font-size: 13px;';
+            removeBtn.textContent = 'Remove';
+            removeBtn.onclick = function() { mappingDiv.remove(); };
+            
+            buttonDiv.appendChild(applyBtn);
+            buttonDiv.appendChild(document.createElement('br'));
+            buttonDiv.appendChild(removeBtn);
+            
+            mappingDiv.appendChild(buttonDiv);
+            
+            manualMappingsDiv.appendChild(mappingDiv);
+        }
+
+        function applyManualMapping(mappingId) {
+            const inputElement = document.getElementById(`${mappingId}_name`);
+            
+            if (!inputElement) {
+                console.error('Could not find input element with id:', `${mappingId}_name`);
+                alert('Error: Could not find the unified name input field.');
+                return;
+            }
+            
+            const standardName = inputElement.value.trim();
+            if (!standardName) {
+                alert('Please enter a unified name for this mapping.');
+                return;
+            }
+
+            const selects = document.querySelectorAll(`[data-mapping-id="${mappingId}"]`);
+            const mapping = {};
+
+            selects.forEach(select => {
+                const fileIndex = parseInt(select.dataset.fileIndex);
+                const headerName = select.value;
+                
+                if (headerName) {
+                    mapping[parsedData[fileIndex].fileName] = headerName;
+                }
+            });
+
+            if (Object.keys(mapping).length < 2) {
+                alert('Please select at least 2 headers to map together.');
+                return;
+            }
+
+            headerMappings[standardName] = mapping;
+            
+            // Remove the manual mapping form
+            document.getElementById(mappingId).remove();
+            
+            // Refresh the mapper display to show active mappings
+            const isMapperVisible = !document.getElementById('headerMapper').classList.contains('hidden');
+            if (isMapperVisible) {
+                document.getElementById('headerMapper').classList.add('hidden');
+                showHeaderMapper();
+            }
+            
+            // Add to comparison fields
+            quickAddField(standardName);
+            
+            alert(`Mapping created! "${standardName}" will now be used across all selected files.`);
+        }
+
+        function clearAllMappings() {
+            if (confirm('Are you sure you want to clear all header mappings?')) {
+                headerMappings = {};
+                showHeaderMapper();
+                showHeaderMapper(); // Toggle to refresh
+            }
+        }
+
+        function showHeaderAnalysis() {
+            const headerAnalysisDiv = document.getElementById('headerAnalysis');
+            
+            if (!headerAnalysisDiv.classList.contains('hidden')) {
+                headerAnalysisDiv.classList.add('hidden');
+                return;
+            }
+
+            // Collect all headers from all files
+            const fileHeaders = parsedData.map(file => ({
+                fileName: file.fileName,
+                headers: file.headers
+            }));
+
+            // Find common headers across all files
+            const allHeaderSets = fileHeaders.map(f => new Set(f.headers));
+            const commonHeaders = fileHeaders[0].headers.filter(header => 
+                allHeaderSets.every(set => set.has(header))
+            );
+
+            // Find headers unique to each file
+            const allUniqueHeaders = new Set();
+            fileHeaders.forEach(file => {
+                file.headers.forEach(header => allUniqueHeaders.add(header));
+            });
+
+            let analysisHTML = `
+                <div style="margin-bottom: 15px;">
+                    <h4 style="margin-bottom: 10px; color: #333;">Header Analysis</h4>
+                    <p style="font-size: 13px; color: #6c757d; margin-bottom: 10px;">
+                        <span style="background: #d4edda; padding: 2px 6px; border-radius: 3px;">Green</span> = Header exists in this file | 
+                        <span style="background: #f8d7da; padding: 2px 6px; border-radius: 3px;">Red</span> = Header missing in this file
+                    </p>
+                </div>
+            `;
+
+            if (commonHeaders.length > 0) {
+                analysisHTML += `
+                    <div style="margin-bottom: 15px; padding: 10px; background: #d4edda; border-radius: 6px;">
+                        <strong>✓ Common Headers (in all files):</strong><br>
+                        <div style="margin-top: 5px;">
+                            ${commonHeaders.map(h => `<span class="header-chip">${h}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Build comparison table
+            analysisHTML += `
+                <table class="header-analysis-table">
+                    <thead>
+                        <tr>
+                            <th>Header Name</th>
+                            ${fileHeaders.map(f => `<th>${f.fileName}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            Array.from(allUniqueHeaders).sort().forEach(header => {
+                analysisHTML += '<tr>';
+                analysisHTML += `<td><strong>${header}</strong></td>`;
+                
+                fileHeaders.forEach(file => {
+                    const hasHeader = file.headers.includes(header);
+                    const className = hasHeader ? 'header-match' : 'header-mismatch';
+                    const symbol = hasHeader ? '✓' : '✗';
+                    const position = hasHeader ? `Column ${file.headers.indexOf(header) + 1}` : 'Missing';
+                    analysisHTML += `<td class="${className}">${symbol} ${position}</td>`;
+                });
+                
+                analysisHTML += '</tr>';
+            });
+
+            analysisHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            // Add quick-add buttons for common headers
+            if (commonHeaders.length > 0) {
+                analysisHTML += `
+                    <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                        <strong>Quick Add Common Headers:</strong><br>
+                        <div style="margin-top: 8px;">
+                            ${commonHeaders.map(h => 
+                                `<button onclick="quickAddField('${h.replace(/'/g, "\\'")}')" class="btn btn-secondary" style="padding: 6px 12px; font-size: 13px; margin: 3px;">+ ${h}</button>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            headerAnalysisDiv.innerHTML = analysisHTML;
+            headerAnalysisDiv.classList.remove('hidden');
+        }
+
+        function quickAddField(headerName) {
+            // Check if field already exists
+            const existingInputs = Array.from(document.querySelectorAll('#fieldInputs input[type="text"]'));
+            const alreadyExists = existingInputs.some(input => input.value.trim() === headerName);
+            
+            if (alreadyExists) {
+                alert(`"${headerName}" is already added to the comparison fields.`);
+                return;
+            }
+
+            // Find first empty input or add new one
+            const emptyInput = existingInputs.find(input => input.value.trim() === '');
+            if (emptyInput) {
+                emptyInput.value = headerName;
+            } else {
+                const fieldInputs = document.getElementById('fieldInputs');
+                const newField = document.createElement('div');
+                newField.className = 'field-input-group';
+                newField.innerHTML = `
+                    <input type="text" placeholder="e.g., First Name" value="${headerName}">
+                    <button class="remove-btn" onclick="removeField(this)">Remove</button>
+                `;
+                fieldInputs.appendChild(newField);
+            }
+        }
+
+        function performComparison() {
+            const comparisonType = document.getElementById('comparisonType').value;
+            const caseSensitive = document.getElementById('caseSensitive').checked;
+            const trimWhitespace = document.getElementById('trimWhitespace').checked;
+            const matchByHeaderName = document.getElementById('matchByHeaderName').checked;
+            const fields = getComparisonFields();
+
+            if (uploadedFiles.length < 2) {
+                alert('Please upload at least 2 CSV files to compare.');
+                return;
+            }
+
+            if (fields.length === 0) {
+                alert('Please enter at least one field name to compare.');
+                return;
+            }
+
+            // Validate that all files have the specified fields (considering mappings)
+            if (matchByHeaderName) {
+                const missingFields = [];
+                parsedData.forEach(fileData => {
+                    fields.forEach(field => {
+                        // Check if field exists directly OR has a mapping for this file
+                        const hasDirect = fileData.headers.includes(field);
+                        const hasMapped = headerMappings[field] && headerMappings[field][fileData.fileName];
+                        
+                        if (!hasDirect && !hasMapped) {
+                            missingFields.push(`"${field}" not found in ${fileData.fileName}`);
+                        }
+                    });
+                });
+
+                if (missingFields.length > 0) {
+                    const proceed = confirm(
+                        `Warning: Some fields are missing in some files:\n\n${missingFields.join('\n')}\n\nDo you want to continue anyway? Records without these fields will be treated as empty.`
+                    );
+                    if (!proceed) return;
+                }
+            }
+
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.classList.remove('hidden');
+            resultsSection.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Analyzing your files...</p>
+                </div>
+            `;
+
+            setTimeout(() => {
+                compareData(comparisonType, fields, caseSensitive, trimWhitespace, matchByHeaderName);
+            }, 100);
+        }
+
+        function compareData(comparisonType, fields, caseSensitive, trimWhitespace, matchByHeaderName) {
+            const createKey = (row, fileName) => {
+                return fields.map(field => {
+                    // Check if there's a mapping for this field and file
+                    let actualField = field;
+                    if (headerMappings[field] && headerMappings[field][fileName]) {
+                        actualField = headerMappings[field][fileName];
+                    }
+                    
+                    let value = row[actualField] || '';
+                    if (trimWhitespace) value = value.trim();
+                    if (!caseSensitive) value = value.toLowerCase();
+                    return value;
+                }).join('|||');
+            };
+
+            const fileMaps = parsedData.map(fileData => {
+                const map = new Map();
+                fileData.rows.forEach(row => {
+                    const key = createKey(row, fileData.fileName);
+                    if (!map.has(key)) {
+                        map.set(key, []);
+                    }
+                    map.get(key).push({ ...row, __source: fileData.fileName });
+                });
+                return { fileName: fileData.fileName, map: map };
+            });
+
+            let results = [];
+
+            switch (comparisonType) {
+                case 'matching':
+                    const firstMap = fileMaps[0].map;
+                    firstMap.forEach((records, key) => {
+                        let foundInAll = true;
+                        for (let i = 1; i < fileMaps.length; i++) {
+                            if (!fileMaps[i].map.has(key)) {
+                                foundInAll = false;
+                                break;
+                            }
+                        }
+                        if (foundInAll) {
+                            records.forEach(record => results.push(record));
+                        }
+                    });
+                    break;
+
+                case 'non-matching':
+                    const allKeys = new Set();
+                    fileMaps.forEach(fm => {
+                        fm.map.forEach((records, key) => allKeys.add(key));
+                    });
+
+                    allKeys.forEach(key => {
+                        let foundInAll = true;
+                        for (let i = 0; i < fileMaps.length; i++) {
+                            if (!fileMaps[i].map.has(key)) {
+                                foundInAll = false;
+                                break;
+                            }
+                        }
+                        if (!foundInAll) {
+                            fileMaps.forEach(fm => {
+                                if (fm.map.has(key)) {
+                                    fm.map.get(key).forEach(record => results.push(record));
+                                }
+                            });
+                        }
+                    });
+                    break;
+
+                case 'unique-to-each':
+                    fileMaps.forEach((currentFile, currentIndex) => {
+                        currentFile.map.forEach((records, key) => {
+                            let foundInOther = false;
+                            for (let i = 0; i < fileMaps.length; i++) {
+                                if (i !== currentIndex && fileMaps[i].map.has(key)) {
+                                    foundInOther = true;
+                                    break;
+                                }
+                            }
+                            if (!foundInOther) {
+                                records.forEach(record => results.push(record));
+                            }
+                        });
+                    });
+                    break;
+
+                case 'all-unique':
+                    const keysMap = new Map();
+                    fileMaps.forEach((fm, index) => {
+                        fm.map.forEach((records, key) => {
+                            if (!keysMap.has(key)) {
+                                keysMap.set(key, new Set());
+                            }
+                            keysMap.get(key).add(index);
+                        });
+                    });
+
+                    keysMap.forEach((fileIndices, key) => {
+                        if (fileIndices.size < fileMaps.length) {
+                            fileMaps.forEach(fm => {
+                                if (fm.map.has(key)) {
+                                    fm.map.get(key).forEach(record => results.push(record));
+                                }
+                            });
+                        }
+                    });
+                    break;
+            }
+
+            comparisonResults = results;
+            
+            const typeLabels = {
+                'matching': 'Matching Records Found',
+                'non-matching': 'Non-Matching Records Found',
+                'unique-to-each': 'Unique Records Found',
+                'all-unique': 'Unique Records (Not in All Files)'
+            };
+
+            const summary = `
+                <h3>Comparison Summary</h3>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-number">${comparisonResults.length.toLocaleString()}</div>
+                        <div class="summary-label">${typeLabels[comparisonType]}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number">${uploadedFiles.length}</div>
+                        <div class="summary-label">Files Compared</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number">${fields.length}</div>
+                        <div class="summary-label">Fields Compared</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>Compared Fields:</strong> ${fields.join(', ')}<br>
+                    <strong>Matching Method:</strong> ${matchByHeaderName ? 'By Header Name (column position independent)' : 'By Column Position'}
+                    ${Object.keys(headerMappings).length > 0 ? '<br><strong>Header Mappings Active:</strong> ' + Object.keys(headerMappings).length + ' field(s) mapped' : ''}
+                </div>
+            `;
+
+            displayResults(summary, 'comparison');
+        }
+
+        function displayResults(summaryHTML, type) {
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.classList.remove('hidden');
+
+            const downloadButtons = `
+                <div class="export-buttons" style="margin-bottom: 20px;">
+                    <button class="btn btn-success" onclick="exportResults()">💾 Download Results as CSV</button>
+                    <button class="btn btn-secondary" onclick="resetTool()">🔄 Start Over</button>
+                </div>
+            `;
+
+            let tableHTML = '';
+            
+            if (comparisonResults.length === 0) {
+                tableHTML = '<div class="results-table"><div style="padding: 40px; text-align: center; color: #6c757d;"><h3>No results found</h3><p>No records matched your criteria.</p></div></div>';
+            } else {
+                const allHeaders = new Set(['__source']);
+                comparisonResults.forEach(row => {
+                    Object.keys(row).forEach(key => allHeaders.add(key));
+                });
+                const headers = Array.from(allHeaders);
+
+                tableHTML = '<div class="results-table"><table><thead><tr>';
+                headers.forEach(header => {
+                    const displayHeader = header === '__source' ? 'Source File' : header;
+                    tableHTML += `<th>${displayHeader}</th>`;
+                });
+                tableHTML += '</tr></thead><tbody>';
+
+                comparisonResults.slice(0, 1000).forEach(row => {
+                    tableHTML += '<tr>';
+                    headers.forEach(header => {
+                        const value = row[header] || '';
+                        tableHTML += `<td>${escapeHtml(value)}</td>`;
+                    });
+                    tableHTML += '</tr>';
+                });
+
+                if (comparisonResults.length > 1000) {
+                    tableHTML += `<tr><td colspan="${headers.length}" style="text-align: center; padding: 20px; background: #fff3cd; color: #856404;">Showing first 1,000 results of ${comparisonResults.length.toLocaleString()}. Download CSV to see all results.</td></tr>`;
+                }
+
+                tableHTML += '</tbody></table></div>';
+            }
+
+            resultsSection.innerHTML = `
+                <div class="section-title">📈 Results</div>
+                ${downloadButtons}
+                <div class="results-summary">${summaryHTML}</div>
+                ${tableHTML}
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function exportResults() {
+            if (comparisonResults.length === 0) {
+                alert('No results to export.');
+                return;
+            }
+
+            const allHeaders = new Set(['Source File']);
+            comparisonResults.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key !== '__source') allHeaders.add(key);
+                });
+            });
+            const headers = Array.from(allHeaders);
+
+            let csv = headers.map(h => `"${h}"`).join(',') + '\n';
+
+            comparisonResults.forEach(row => {
+                const values = headers.map(header => {
+                    let value;
+                    if (header === 'Source File') {
+                        value = row.__source || '';
+                    } else {
+                        value = row[header] || '';
+                    }
+                    return `"${String(value).replace(/"/g, '""')}"`;
+                });
+                csv += values.join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `results_${Date.now()}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function setupCrossrefMode() {
+            const fileSelectionList = document.getElementById('crossrefFileSelectionList');
+            fileSelectionList.innerHTML = '';
+            
+            parsedData.forEach((fileData, index) => {
+                const checkboxItem = document.createElement('div');
+                checkboxItem.className = 'checkbox-item';
+                checkboxItem.innerHTML = `
+                    <input type="checkbox" id="crossref_file_${index}" value="${index}" checked onchange="updateCrossrefColumns()">
+                    <label for="crossref_file_${index}">${fileData.fileName}</label>
+                `;
+                fileSelectionList.appendChild(checkboxItem);
+            });
+
+            updateCrossrefColumns();
+        }
+
+        function updateCrossrefColumns() {
+            const selectedFiles = getCrossrefSelectedFiles();
+            const allColumns = new Set();
+            
+            selectedFiles.forEach(fileData => {
+                fileData.headers.forEach(header => allColumns.add(header));
+            });
+
+            const columnOptions = Array.from(allColumns).sort().map(col => 
+                `<option value="${col}">${col}</option>`
+            ).join('');
+
+            const groupByColumn = document.getElementById('groupByColumn');
+            const currentValue = groupByColumn.value;
+            groupByColumn.innerHTML = '<option value="">Choose column...</option>' + columnOptions;
+            if (currentValue && Array.from(allColumns).includes(currentValue)) {
+                groupByColumn.value = currentValue;
+            }
+
+            updateRelatedColumnsCheckboxes(Array.from(allColumns));
+        }
+
+        function updateCrossrefFields() {
+            const queryType = document.getElementById('crossrefQueryType').value;
+            const configSection = document.getElementById('crossrefConfig');
+            const groupBySection = document.getElementById('groupBySection');
+            const relatedColumnsSection = document.getElementById('relatedColumnsSection');
+            const additionalMatchSection = document.getElementById('additionalMatchSection');
+            const groupByLabel = document.getElementById('groupByLabel');
+
+            if (!queryType) {
+                configSection.classList.add('hidden');
+                return;
+            }
+
+            configSection.classList.remove('hidden');
+            groupBySection.classList.remove('hidden');
+            relatedColumnsSection.classList.remove('hidden');
+            additionalMatchSection.classList.add('hidden');
+
+            switch (queryType) {
+                case 'same_value':
+                    groupByLabel.textContent = 'Column to Check for Same Values';
+                    break;
+                case 'grouped_by':
+                    groupByLabel.textContent = 'Group By Column';
+                    break;
+                case 'duplicate_values':
+                    groupByLabel.textContent = 'Column to Check for Duplicates';
+                    break;
+                case 'related_records':
+                    groupByLabel.textContent = 'Primary Column to Match';
+                    additionalMatchSection.classList.remove('hidden');
+                    break;
+            }
+
+            updateCrossrefColumns();
+        }
+
+        function updateRelatedColumnsCheckboxes(columns) {
+            const relatedColumnsCheckboxes = document.getElementById('relatedColumnsCheckboxes');
+            const additionalMatchCheckboxes = document.getElementById('additionalMatchCheckboxes');
+            const groupByColumn = document.getElementById('groupByColumn').value;
+
+            relatedColumnsCheckboxes.innerHTML = '';
+            additionalMatchCheckboxes.innerHTML = '';
+
+            columns.forEach(column => {
+                if (column !== groupByColumn) {
+                    const checkboxItem = document.createElement('div');
+                    checkboxItem.className = 'checkbox-item';
+                    checkboxItem.innerHTML = `
+                        <input type="checkbox" id="related_${column.replace(/\s+/g, '_')}" value="${column}" checked>
+                        <label for="related_${column.replace(/\s+/g, '_')}">${column}</label>
+                    `;
+                    relatedColumnsCheckboxes.appendChild(checkboxItem);
+
+                    const matchCheckboxItem = document.createElement('div');
+                    matchCheckboxItem.className = 'checkbox-item';
+                    matchCheckboxItem.innerHTML = `
+                        <input type="checkbox" id="match_${column.replace(/\s+/g, '_')}" value="${column}">
+                        <label for="match_${column.replace(/\s+/g, '_')}">${column}</label>
+                    `;
+                    additionalMatchCheckboxes.appendChild(matchCheckboxItem);
+                }
+            });
+        }
+
+        function getCrossrefSelectedFiles() {
+            const selected = [];
+            document.querySelectorAll('#crossrefFileSelectionList input[type="checkbox"]:checked').forEach(checkbox => {
+                const index = parseInt(checkbox.value);
+                selected.push(parsedData[index]);
+            });
+            return selected;
+        }
+
+        function getRelatedColumns() {
+            const selected = [];
+            document.querySelectorAll('#relatedColumnsCheckboxes input[type="checkbox"]:checked').forEach(checkbox => {
+                selected.push(checkbox.value);
+            });
+            return selected;
+        }
+
+        function getAdditionalMatchColumns() {
+            const selected = [];
+            document.querySelectorAll('#additionalMatchCheckboxes input[type="checkbox"]:checked').forEach(checkbox => {
+                selected.push(checkbox.value);
+            });
+            return selected;
+        }
+
+        function performCrossReference() {
+            const selectedFiles = getCrossrefSelectedFiles();
+            const queryType = document.getElementById('crossrefQueryType').value;
+            const groupByColumn = document.getElementById('groupByColumn').value;
+            const relatedColumns = getRelatedColumns();
+            const additionalMatchColumns = getAdditionalMatchColumns();
+            const minGroupSize = parseInt(document.getElementById('minGroupSize').value) || 2;
+            const showGroupSummary = document.getElementById('showGroupSummary').checked;
+            const sortByGroupSize = document.getElementById('sortByGroupSize').checked;
+
+            if (selectedFiles.length === 0) {
+                alert('Please select at least one file to query.');
+                return;
+            }
+
+            if (!queryType) {
+                alert('Please select a query type.');
+                return;
+            }
+
+            if (!groupByColumn) {
+                alert('Please select a column to group by.');
+                return;
+            }
+
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.classList.remove('hidden');
+            resultsSection.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Running cross-reference query...</p>
+                </div>
+            `;
+
+            setTimeout(() => {
+                executeCrossReference(selectedFiles, queryType, groupByColumn, relatedColumns, 
+                    additionalMatchColumns, minGroupSize, showGroupSummary, sortByGroupSize);
+            }, 100);
+        }
+
+        function executeCrossReference(selectedFiles, queryType, groupByColumn, relatedColumns, 
+            additionalMatchColumns, minGroupSize, showGroupSummary, sortByGroupSize) {
+            
+            let allRows = [];
+            selectedFiles.forEach(fileData => {
+                fileData.rows.forEach(row => {
+                    allRows.push({ ...row, __source: fileData.fileName });
+                });
+            });
+
+            const groups = new Map();
+
+            allRows.forEach(row => {
+                const groupValue = (row[groupByColumn] || '').toString().trim();
+                if (!groupValue) return;
+
+                let matchKey = groupValue.toLowerCase();
+                
+                if (queryType === 'related_records' && additionalMatchColumns.length > 0) {
+                    const additionalValues = additionalMatchColumns.map(col => 
+                        (row[col] || '').toString().trim().toLowerCase()
+                    ).join('|||');
+                    matchKey = groupValue.toLowerCase() + '|||' + additionalValues;
+                }
+
+                if (!groups.has(matchKey)) {
+                    groups.set(matchKey, {
+                        displayValue: groupValue,
+                        records: []
+                    });
+                }
+                
+                groups.get(matchKey).records.push(row);
+            });
+
+            let results = [];
+            let groupSummaries = [];
+
+            groups.forEach((groupData, key) => {
+                if (groupData.records.length >= minGroupSize) {
+                    groupSummaries.push({
+                        value: groupData.displayValue,
+                        count: groupData.records.length,
+                        records: groupData.records
+                    });
+                }
+            });
+
+            if (sortByGroupSize) {
+                groupSummaries.sort((a, b) => b.count - a.count);
+            } else {
+                groupSummaries.sort((a, b) => a.value.localeCompare(b.value));
+            }
+
+            groupSummaries.forEach(group => {
+                group.records.forEach(record => {
+                    const resultRow = { __group: group.value, __group_count: group.count };
+                    
+                    resultRow[groupByColumn] = record[groupByColumn];
+                    
+                    relatedColumns.forEach(col => {
+                        if (record.hasOwnProperty(col)) {
+                            resultRow[col] = record[col];
+                        }
+                    });
+                    
+                    if (queryType === 'related_records') {
+                        additionalMatchColumns.forEach(col => {
+                            if (record.hasOwnProperty(col)) {
+                                resultRow[col] = record[col];
+                            }
+                        });
+                    }
+                    
+                    resultRow.__source = record.__source;
+                    results.push(resultRow);
+                });
+            });
+
+            comparisonResults = results;
+            displayCrossReferenceResults(queryType, groupByColumn, relatedColumns, 
+                groupSummaries, minGroupSize, showGroupSummary);
+        }
+
+        function displayCrossReferenceResults(queryType, groupByColumn, relatedColumns, 
+            groupSummaries, minGroupSize, showGroupSummary) {
+            
+            const queryTypeLabels = {
+                'same_value': 'Records with Same Values',
+                'grouped_by': 'Grouped Records',
+                'duplicate_values': 'Duplicate Values',
+                'related_records': 'Related Records'
+            };
+
+            const downloadButtons = `
+                <div class="export-buttons" style="margin-bottom: 20px;">
+                    <button class="btn btn-success" onclick="exportResults()">💾 Download Results as CSV</button>
+                    <button class="btn btn-secondary" onclick="resetTool()">🔄 Start Over</button>
+                </div>
+            `;
+
+            const summary = `
+                <h3>Cross-Reference Query Results</h3>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-number">${comparisonResults.length.toLocaleString()}</div>
+                        <div class="summary-label">Total Records</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number">${groupSummaries.length.toLocaleString()}</div>
+                        <div class="summary-label">Groups Found</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number">${Math.max(...groupSummaries.map(g => g.count))}</div>
+                        <div class="summary-label">Largest Group</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>Query:</strong> ${queryTypeLabels[queryType]} by "${groupByColumn}"<br>
+                    <strong>Showing:</strong> ${relatedColumns.join(', ')}<br>
+                    <strong>Min Group Size:</strong> ${minGroupSize}
+                </div>
+            `;
+
+            let tableHTML = '';
+
+            if (showGroupSummary && groupSummaries.length > 0) {
+                groupSummaries.forEach(group => {
+                    const groupRecords = comparisonResults.filter(r => r.__group === group.value);
+                    
+                    tableHTML += `
+                        <div class="group-header">
+                            <div class="group-title">${groupByColumn}: ${escapeHtml(group.value)}</div>
+                            <div class="group-count">${group.count} record${group.count > 1 ? 's' : ''}</div>
+                        </div>
+                    `;
+
+                    const allHeaders = new Set(['__source']);
+                    groupRecords.forEach(row => {
+                        Object.keys(row).forEach(key => {
+                            if (!key.startsWith('__')) {
+                                allHeaders.add(key);
+                            }
+                        });
+                    });
+                    const headers = Array.from(allHeaders);
+
+                    tableHTML += '<div class="results-table"><table><thead><tr>';
+                    headers.forEach(header => {
+                        const displayHeader = header === '__source' ? 'Source File' : header;
+                        tableHTML += `<th>${displayHeader}</th>`;
+                    });
+                    tableHTML += '</tr></thead><tbody>';
+
+                    groupRecords.forEach(row => {
+                        tableHTML += '<tr>';
+                        headers.forEach(header => {
+                            const value = row[header] || '';
+                            tableHTML += `<td>${escapeHtml(value)}</td>`;
+                        });
+                        tableHTML += '</tr>';
+                    });
+
+                    tableHTML += '</tbody></table></div>';
+                });
+            } else if (comparisonResults.length > 0) {
+                const allHeaders = new Set(['__group', '__group_count', '__source']);
+                comparisonResults.forEach(row => {
+                    Object.keys(row).forEach(key => {
+                        if (!key.startsWith('__') || key === '__group' || key === '__group_count') {
+                            allHeaders.add(key);
+                        }
+                    });
+                });
+                const headers = Array.from(allHeaders).filter(h => !h.startsWith('__') || h === '__group' || h === '__group_count');
+
+                tableHTML = '<div class="results-table"><table><thead><tr>';
+                headers.forEach(header => {
+                    let displayHeader = header;
+                    if (header === '__source') displayHeader = 'Source File';
+                    else if (header === '__group') displayHeader = `${groupByColumn} (Group)`;
+                    else if (header === '__group_count') displayHeader = 'Group Count';
+                    tableHTML += `<th>${displayHeader}</th>`;
+                });
+                tableHTML += '</tr></thead><tbody>';
+
+                comparisonResults.slice(0, 1000).forEach(row => {
+                    tableHTML += '<tr>';
+                    headers.forEach(header => {
+                        const value = row[header] || '';
+                        tableHTML += `<td>${escapeHtml(value)}</td>`;
+                    });
+                    tableHTML += '</tr>';
+                });
+
+                if (comparisonResults.length > 1000) {
+                    tableHTML += `<tr><td colspan="${headers.length}" style="text-align: center; padding: 20px; background: #fff3cd; color: #856404;">Showing first 1,000 results of ${comparisonResults.length.toLocaleString()}. Download CSV to see all results.</td></tr>`;
+                }
+
+                tableHTML += '</tbody></table></div>';
+            } else {
+                tableHTML = '<div class="results-table"><div style="padding: 40px; text-align: center; color: #6c757d;"><h3>No results found</h3><p>No groups met your criteria.</p></div></div>';
+            }
+
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.classList.remove('hidden');
+            resultsSection.innerHTML = `
+                <div class="section-title">📈 Results</div>
+                ${downloadButtons}
+                <div class="results-summary">${summary}</div>
+                ${tableHTML}
+            `;
+        }
+
+        function resetTool() {
+            if (confirm('This will clear all uploaded files and results. Continue?')) {
+                uploadedFiles = [];
+                parsedData = [];
+                comparisonResults = [];
+                headerMappings = {};
+                fileList.innerHTML = '';
+                document.getElementById('modeSection').classList.add('hidden');
+                document.getElementById('optionsSection').classList.add('hidden');
+                document.getElementById('extractionSection').classList.add('hidden');
+                document.getElementById('crossrefSection').classList.add('hidden');
+                document.getElementById('resultsSection').classList.add('hidden');
+                fileInput.value = '';
+                currentMode = null;
+            }
+        }
+    </script>
+</body>
+</html>
